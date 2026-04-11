@@ -6,12 +6,12 @@
 ## Hướng dẫn cài đặt và chạy chương trình
 ### 1. Cài đặt thư viện
 pip install -r SourceCode/requirements.txt
-### 2. Tải dataset (Dùng để so sánh 3 models)
-Tải dataset TrashNet tại: https://github.com/garythung/trashnet
+### 2. Tải dataset 
+Tải dataset TrashNet tại: https://github.com/garythung/trashnet (Dùng để so sánh 3 models)
 Giải nén và đặt 6 thư mục (cardboard, glass, metal, paper, plastic, trash) vào thư mục SourceCode/data/
 
-Tải bộ dữ liệu **Garbage Classification** (10 lớp rác) từ Kaggle:  (Dùng chính để chạy dự án)
-🔗 [https://www.kaggle.com/datasets/nishchalkansara/garbage-classification](https://www.kaggle.com/datasets/nishchalkansara/garbage-classification)
+Tải bộ dữ liệu **Garbage Classification** (10 lớp rác) từ Kaggle:  
+🔗 [https://www.kaggle.com/datasets/nishchalkansara/garbage-classification](https://www.kaggle.com/datasets/nishchalkansara/garbage-classification) (Dùng chính để chạy dự án)
 
 Sau khi tải về, giải nén và **chỉ lấy 10 thư mục con** sau:
 - `battery`
@@ -24,7 +24,7 @@ Sau khi tải về, giải nén và **chỉ lấy 10 thư mục con** sau:
 - `plastic`
 - `shoes`
 - `trash`
-- 
+
 *(Mỗi lớp khuyến nghị từ 400 - 500 ảnh, hệ thống đã có Class Weights để tự cân bằng nếu thiếu).*
 Đặt các thư mục này vào thư mục `SourceCode/data/`.
 
