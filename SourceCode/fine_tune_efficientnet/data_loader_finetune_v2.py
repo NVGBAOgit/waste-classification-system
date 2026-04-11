@@ -8,7 +8,6 @@ import os
 
 DATASET_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')) 
 
-# Classes của bạn (đúng thứ tự thư mục)
 CLASS_NAMES = ['battery', 'cardboard', 'clothes', 'glass', 'metal', 
                'organic', 'paper', 'plastic', 'shoes', 'trash']
 NUM_CLASSES = len(CLASS_NAMES)
