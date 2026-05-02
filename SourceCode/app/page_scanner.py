@@ -5,7 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import sys
 import os
-from database import save_to_db
+from database import save_to_db, save_feedback
 
 CLASS_NAMES = ['battery', 'cardboard', 'clothes', 'glass', 'metal', 'organic', 'paper', 'plastic', 'shoes', 'trash']
 
@@ -53,16 +53,20 @@ def show_scanner():
         model = load_model()
 
     st.title("♻️ GreenAI - Phân loại rác thải thông minh")
-    st.markdown("Tải lên ảnh rác, hệ thống sẽ nhận dạng và đưa ra hướng dẫn xử lý chi tiết.")
+    st.markdown("Tải lên ảnh rác hoặc chụp trực tiếp từ điện thoại, hệ thống sẽ nhận dạng và đưa ra hướng dẫn xử lý chi tiết.")
 
-    uploaded_file = st.file_uploader("Chọn ảnh (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
+    # Giao diện tải ảnh tối giản
+    uploaded_file = st.file_uploader("Chọn ảnh hoặc Chụp ảnh mới (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file).convert('RGB')
         
-        if ('last_uploaded_name' not in st.session_state) or (st.session_state['last_uploaded_name'] != uploaded_file.name):
+        # Nhận diện ảnh mới dựa trên Tên và Dung lượng
+        file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+        
+        if ('last_file_id' not in st.session_state) or (st.session_state['last_file_id'] != file_id):
             st.session_state['uploaded_image'] = image
-            st.session_state['last_uploaded_name'] = uploaded_file.name
+            st.session_state['last_file_id'] = file_id
             st.session_state['need_analyze'] = True
 
     if 'uploaded_image' in st.session_state:
@@ -70,7 +74,7 @@ def show_scanner():
         col1, col2 = st.columns([1, 1.2])
         
         with col1:
-            st.image(image, caption="Ảnh tải lên", use_container_width=True)
+            st.image(image, caption="Ảnh đang phân tích", use_container_width=True)
             
         with col2:
             if model:
@@ -90,9 +94,14 @@ def show_scanner():
                         other_preds.append({"name": CLASS_NAMES[idx], "conf": top_probs[i].item() * 100})
                     st.session_state['other_preds'] = other_preds
                     
-                    # Ghi log DB thông qua module database
+                    # Lưu lịch sử phân loại
                     save_to_db(st.session_state['username'], st.session_state['best_class'], st.session_state['best_conf'])
                     st.session_state['need_analyze'] = False
+                    
+                    # Xóa trí nhớ đánh giá cũ khi có ảnh mới
+                    st.session_state['feedback_submitted'] = False
+                    st.session_state['corrected_label'] = None
+                    st.session_state['show_correction'] = False
 
                 best_class = st.session_state['best_class']
                 best_conf = st.session_state['best_conf']
@@ -110,5 +119,41 @@ def show_scanner():
                 st.markdown("---")
                 st.subheader("💡 Hướng dẫn xử lý")
                 st.info(ADVICE.get(best_class, "Không có lời khuyên cho loại rác này."))
+
+                st.markdown("---")
+                
+                # Kiểm tra xem người dùng đã đánh giá chưa
+                if st.session_state.get('feedback_submitted', False):
+                    if st.session_state.get('corrected_label'):
+                        st.info(f"✅ Bạn đã đính chính rác này là: **{st.session_state['corrected_label'].upper()}**")
+                    else:
+                        st.success("✅ Bạn đã xác nhận AI dự đoán đúng!")
+                
+                # Nếu chưa đánh giá, hiển thị nút bấm
+                else:
+                    st.write("**AI dự đoán có chính xác không?**")
+                    f_col1, f_col2 = st.columns(2)
+                    
+                    with f_col1:
+                        if st.button("👍 Đúng quá!", use_container_width=True):
+                            save_feedback(st.session_state['username'], best_class, best_class, True)
+                            st.session_state['feedback_submitted'] = True
+                            st.session_state['corrected_label'] = None
+                            st.rerun() 
+                            
+                    with f_col2:
+                        if st.button("👎 Sai rồi!", use_container_width=True):
+                            st.session_state['show_correction'] = True
+                            
+                    if st.session_state.get('show_correction', False):
+                        st.warning("Rất tiếc vì hệ thống nhầm lẫn. Xin hãy giúp chúng tôi cải thiện!")
+                        true_label = st.selectbox("Theo bạn, đây thực chất là rác gì?", CLASS_NAMES)
+                        
+                        if st.button("Gửi đáp án đúng"):
+                            save_feedback(st.session_state['username'], best_class, true_label, False)
+                            st.session_state['feedback_submitted'] = True
+                            st.session_state['corrected_label'] = true_label
+                            st.session_state['show_correction'] = False
+                            st.rerun() 
             else:
                 st.error("Không thể tải mô hình. Vui lòng kiểm tra cấu hình.")

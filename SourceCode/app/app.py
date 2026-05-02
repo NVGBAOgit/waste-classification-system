@@ -6,21 +6,34 @@ import page_dashboard
 # Thiết lập giao diện chung 
 st.set_page_config(page_title="GreenAI - Phân loại rác", page_icon="♻️", layout="wide")
 
-hide_browser_eye_css = """
-<style>
-    /* Ẩn con mắt của Edge */
-    input[type="password"]::-ms-reveal,
-    input[type="password"]::-ms-clear {
-        display: none !important;
-    }
-    /* Ẩn biểu tượng tự động điền của Chrome/Webkit */
-    input[type="password"]::-webkit-contacts-auto-fill-button,
-    input[type="password"]::-webkit-credentials-auto-fill-button {
-        display: none !important;
-    }
-</style>
-"""
-st.markdown(hide_browser_eye_css, unsafe_allow_html=True)
+
+custom_css = """
+    <style>
+        /* Ẩn con mắt tự động của trình duyệt ở ô mật khẩu */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear { display: none !important; }
+        input[type="password"]::-webkit-contacts-auto-fill-button,
+        input[type="password"]::-webkit-credentials-auto-fill-button { display: none !important; }
+        
+        /* Đổi màu các nút bấm chính sang xanh lá */
+        div.stButton > button:first-child {
+            background-color: #16a34a;
+            color: white;
+            border-radius: 8px;
+            border: none;
+        }
+        div.stButton > button:first-child:hover {
+            background-color: #15803d;
+        }
+        
+        /* Bo góc làm đẹp các hộp thông báo */
+        div[data-testid="stAlert"] {
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+    """
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # Khởi tạo Database nếu chưa có
 database.init_db()

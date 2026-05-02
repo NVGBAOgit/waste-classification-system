@@ -69,3 +69,30 @@ def login_user(username, password):
     if result and check_password(password, result[0]):
         return True
     return False
+
+def init_feedback_db():
+    """Hàm tạo bảng phản hồi nếu chưa có"""
+    conn = sqlite3.connect('trash_history.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            predicted_class TEXT,
+            true_class TEXT,
+            is_correct BOOLEAN,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def save_feedback(username, predicted_class, true_class, is_correct):
+    """Hàm lưu đánh giá của người dùng vào cơ sở dữ liệu"""
+    init_feedback_db() # Luôn kiểm tra và tạo bảng trước khi lưu
+    conn = sqlite3.connect('trash_history.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO feedback (username, predicted_class, true_class, is_correct) VALUES (?, ?, ?, ?)',
+              (username, predicted_class, true_class, is_correct))
+    conn.commit()
+    conn.close()
