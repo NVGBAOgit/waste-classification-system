@@ -5,6 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import sys
 import os
+import time
 from database import save_to_db, save_feedback
 
 CLASS_NAMES = ['battery', 'cardboard', 'clothes', 'glass', 'metal', 'organic', 'paper', 'plastic', 'shoes', 'trash']
@@ -55,13 +56,10 @@ def show_scanner():
     st.title("♻️ GreenAI - Phân loại rác thải thông minh")
     st.markdown("Tải lên ảnh rác hoặc chụp trực tiếp từ điện thoại, hệ thống sẽ nhận dạng và đưa ra hướng dẫn xử lý chi tiết.")
 
-    # Giao diện tải ảnh tối giản
     uploaded_file = st.file_uploader("Chọn ảnh hoặc Chụp ảnh mới (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file).convert('RGB')
-        
-        # Nhận diện ảnh mới dựa trên Tên và Dung lượng
         file_id = f"{uploaded_file.name}_{uploaded_file.size}"
         
         if ('last_file_id' not in st.session_state) or (st.session_state['last_file_id'] != file_id):
@@ -94,11 +92,19 @@ def show_scanner():
                         other_preds.append({"name": CLASS_NAMES[idx], "conf": top_probs[i].item() * 100})
                     st.session_state['other_preds'] = other_preds
                     
-                    # Lưu lịch sử phân loại
-                    save_to_db(st.session_state['username'], st.session_state['best_class'], st.session_state['best_conf'])
-                    st.session_state['need_analyze'] = False
+                    # LƯU ẢNH VÀO MÁY CỤC BỘ
+                    save_dir = 'history_images'
+                    os.makedirs(save_dir, exist_ok=True)
+                    image_filename = f"{st.session_state['username']}_{int(time.time())}.jpg"
+                    image_path = os.path.join(save_dir, image_filename)
+                    image.save(image_path)
                     
-                    # Xóa trí nhớ đánh giá cũ khi có ảnh mới
+                    # Ghi nhớ đường dẫn ảnh vào Session để hệ thống Feedback có thể truy xuất
+                    st.session_state['current_image_path'] = image_path
+                    
+                    save_to_db(st.session_state['username'], st.session_state['best_class'], st.session_state['best_conf'], image_path)
+                    
+                    st.session_state['need_analyze'] = False
                     st.session_state['feedback_submitted'] = False
                     st.session_state['corrected_label'] = None
                     st.session_state['show_correction'] = False
@@ -120,23 +126,20 @@ def show_scanner():
                 st.subheader("💡 Hướng dẫn xử lý")
                 st.info(ADVICE.get(best_class, "Không có lời khuyên cho loại rác này."))
 
+                # GIAO DIỆN PHẢN HỒI 
                 st.markdown("---")
-                
-                # Kiểm tra xem người dùng đã đánh giá chưa
                 if st.session_state.get('feedback_submitted', False):
                     if st.session_state.get('corrected_label'):
                         st.info(f"✅ Bạn đã đính chính rác này là: **{st.session_state['corrected_label'].upper()}**")
                     else:
                         st.success("✅ Bạn đã xác nhận AI dự đoán đúng!")
-                
-                # Nếu chưa đánh giá, hiển thị nút bấm
                 else:
                     st.write("**AI dự đoán có chính xác không?**")
                     f_col1, f_col2 = st.columns(2)
                     
                     with f_col1:
                         if st.button("👍 Đúng quá!", use_container_width=True):
-                            save_feedback(st.session_state['username'], best_class, best_class, True)
+                            save_feedback(st.session_state['username'], best_class, best_class, True, st.session_state.get('current_image_path'))
                             st.session_state['feedback_submitted'] = True
                             st.session_state['corrected_label'] = None
                             st.rerun() 
@@ -150,7 +153,7 @@ def show_scanner():
                         true_label = st.selectbox("Theo bạn, đây thực chất là rác gì?", CLASS_NAMES)
                         
                         if st.button("Gửi đáp án đúng"):
-                            save_feedback(st.session_state['username'], best_class, true_label, False)
+                            save_feedback(st.session_state['username'], best_class, true_label, False, st.session_state.get('current_image_path'))
                             st.session_state['feedback_submitted'] = True
                             st.session_state['corrected_label'] = true_label
                             st.session_state['show_correction'] = False
