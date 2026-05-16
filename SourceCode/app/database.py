@@ -93,7 +93,7 @@ def init_feedback_db():
             true_class TEXT,
             is_correct BOOLEAN,
             image_path TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp TEXT
         )
     ''')
     # Nâng cấp bảng feedback cũ: Thêm cột image_path
@@ -101,6 +101,19 @@ def init_feedback_db():
         c.execute("ALTER TABLE feedback ADD COLUMN image_path TEXT")
     except:
         pass
+        
+    try:
+        c.execute('''
+            UPDATE feedback 
+            SET timestamp = (
+                SELECT scan_time FROM history WHERE history.image_path = feedback.image_path
+            )
+            WHERE image_path IS NOT NULL 
+              AND EXISTS (SELECT 1 FROM history WHERE history.image_path = feedback.image_path)
+        ''')
+    except:
+        pass
+    
     conn.commit()
     conn.close()
 
@@ -108,9 +121,31 @@ def save_feedback(username, predicted_class, true_class, is_correct, image_path=
     init_feedback_db()
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     c.execute('''
-        INSERT INTO feedback (username, predicted_class, true_class, is_correct, image_path) 
-        VALUES (?, ?, ?, ?, ?)
-    ''', (username, predicted_class, true_class, is_correct, image_path))
+        INSERT INTO feedback (username, predicted_class, true_class, is_correct, image_path, timestamp) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (username, predicted_class, true_class, is_correct, image_path, now))
+    conn.commit()
+    conn.close()
+
+def delete_history_and_feedback(record_id, image_path=None):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    # 1. Xóa trong bảng lịch sử quét chính
+    c.execute("DELETE FROM history WHERE id = ?", (record_id,))
+    # 2. Xóa luôn phản hồi của bản ghi đó dựa trên đường dẫn ảnh (bảo toàn dữ liệu)
+    if image_path and str(image_path) != 'nan':
+        c.execute("DELETE FROM feedback WHERE image_path = ?", (str(image_path),))
+    conn.commit()
+    conn.close()
+
+def delete_all_user_data(username):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    # Xóa toàn bộ bản ghi lịch sử quét
+    c.execute("DELETE FROM history WHERE username = ?", (username,))
+    # Xóa toàn bộ bản ghi phản hồi (feedback)
+    c.execute("DELETE FROM feedback WHERE username = ?", (username,))
     conn.commit()
     conn.close()
