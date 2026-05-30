@@ -1,8 +1,26 @@
 import sqlite3
 import bcrypt
+import os
+import shutil
 from datetime import datetime
 
 DB_NAME = "trash_history.db"
+
+# AUTO BACKUP 
+def auto_backup_db():
+    if not os.path.exists(DB_NAME):
+        return
+    
+    backup_dir = "backup_db"
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    # Lấy ngày hiện tại để làm tên file backup (VD: trash_history_20260530.db)
+    today_str = datetime.now().strftime("%Y%m%d")
+    backup_file = os.path.join(backup_dir, f"trash_history_{today_str}.db")
+    
+    # Chỉ backup 1 lần mỗi ngày để tránh ghi đè liên tục gây nặng máy
+    if not os.path.exists(backup_file):
+        shutil.copy2(DB_NAME, backup_file)
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)

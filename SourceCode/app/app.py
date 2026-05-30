@@ -37,6 +37,9 @@ st.markdown(custom_css, unsafe_allow_html=True)
 # Khởi tạo Database nếu chưa có
 database.init_db()
 
+# KÍCH HOẠT AUTO BACKUP KHI ỨNG DỤNG CHẠY
+database.auto_backup_db()
+
 # Cài đặt trạng thái Session
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False

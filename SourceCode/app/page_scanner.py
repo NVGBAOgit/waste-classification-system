@@ -76,13 +76,22 @@ def show_scanner():
     uploaded_file = st.file_uploader(upl_text, type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
-        image = Image.open(uploaded_file).convert('RGB')
-        file_id = f"{uploaded_file.name}_{uploaded_file.size}"
         
-        if ('last_file_id' not in st.session_state) or (st.session_state['last_file_id'] != file_id):
-            st.session_state['uploaded_image'] = image
-            st.session_state['last_file_id'] = file_id
-            st.session_state['need_analyze'] = True
+        # KIỂM DUYỆT DUNG LƯỢNG FILE TẢI LÊN
+        MAX_FILE_SIZE = 5 * 1024 * 1024  # Cấm file > 5 MB
+        
+        if uploaded_file.size > MAX_FILE_SIZE:
+            err_msg = "⚠️ Tệp tải lên quá lớn! Vui lòng chọn ảnh dưới 5MB để đảm bảo hiệu năng hệ thống." if lang == 'vi' else "⚠️ File too large! Please select an image under 5MB to ensure system performance."
+            st.error(err_msg)
+            # Ngăn chặn không cho code bên dưới chạy nếu file quá to
+        else:
+            image = Image.open(uploaded_file).convert('RGB')
+            file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+            
+            if ('last_file_id' not in st.session_state) or (st.session_state['last_file_id'] != file_id):
+                st.session_state['uploaded_image'] = image
+                st.session_state['last_file_id'] = file_id
+                st.session_state['need_analyze'] = True
 
     if 'uploaded_image' in st.session_state:
         image = st.session_state['uploaded_image']
