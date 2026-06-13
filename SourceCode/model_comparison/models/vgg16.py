@@ -12,7 +12,7 @@ def build_vgg16(num_classes=6, freeze=True):
             param.requires_grad = False # Tắt điều chỉnh trọng số những phần đã đóng băng
     
     # Thay lớp cuối từ 1000 class → 6 class
-    model.classifier[6] = nn.Linear(4096, num_classes)
+    model.classifier[6] = nn.Linear(model.classifier[6].in_features, num_classes)
     
     return model
 

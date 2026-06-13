@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+
+# Model files (quá nặng)
+*.pth
+*.onnx
+
+# Database
+*.db
+backup_db/
+
+# User data
+history_images/
+
+# Dataset (quá nặng)
+data/
+model_comparison/data/
+
+.cph/

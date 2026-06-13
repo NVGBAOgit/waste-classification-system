@@ -16,8 +16,8 @@ from gradcam_helper import load_model as load_gradcam_model, generate_gradcam
 base_dir = os.path.dirname(os.path.abspath(__file__))
 project_dir = os.path.abspath(os.path.join(base_dir, '..'))
 
-ONNX_MODEL_PATH = os.path.join(project_dir, 'saved_models', 'efficientnet_b0.onnx')
-PYTORCH_MODEL_PATH = os.path.join(project_dir, 'saved_models', 'efficientnet_finetune_best_v2.pth')
+ONNX_MODEL_PATH = os.path.join(project_dir, 'fine_tune_efficientnet', 'saved_models', 'efficientnet_b0.onnx')
+PYTORCH_MODEL_PATH = os.path.join(project_dir, 'fine_tune_efficientnet', 'saved_models', 'efficientnet_finetune_best.pth')
 
 CLASS_NAMES = ['battery', 'cardboard', 'clothes', 'glass', 'metal', 
                'organic', 'paper', 'plastic', 'shoes', 'trash']

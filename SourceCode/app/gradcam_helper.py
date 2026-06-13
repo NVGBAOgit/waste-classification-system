@@ -62,12 +62,8 @@ def generate_gradcam(model, image_path: str, save_path: str = "gradcam_output.jp
 # ==========================================
 if __name__ == "__main__":
     import os
-    
-    # Tự động lấy đường dẫn tuyệt đối để tránh lỗi dù bạn chạy code từ thư mục nào
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    # Đường dẫn file trọng số và ảnh test (lùi ra ngoài thư mục gốc)
-    MODEL_WEIGHTS = os.path.join(BASE_DIR, "saved_models", "efficientnet_finetune_best_v2.pth")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    MODEL_WEIGHTS = os.path.join(BASE_DIR, '..', 'fine_tune_efficientnet', 'saved_models', 'efficientnet_finetune_best.pth')
     TEST_IMAGE = os.path.join(BASE_DIR, "test_image.jpg")
     OUTPUT_IMAGE = os.path.join(BASE_DIR, "heatmap_result.jpg")
     
