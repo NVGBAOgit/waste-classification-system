@@ -57,9 +57,6 @@ def generate_gradcam(model, image_path: str, save_path: str = "gradcam_output.jp
     cv2.imwrite(save_path, visualization[:, :, ::-1]) # Chuyển lại sang BGR để lưu bằng OpenCV
     return save_path
 
-# ==========================================
-# KHU VỰC CHẠY THỬ MÃ (TESTING)
-# ==========================================
 if __name__ == "__main__":
     import os
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
