@@ -66,8 +66,8 @@ Lệnh này sẽ tạo file `.onnx` cần thiết cho API.
 
 ### 6. Chạy Backend API
 ```bash
-cd SourceCode
-python -m uvicorn api:app --reload --host 127.0.0.1 --port 8000
+cd SourceCode/app
+python api.py
 ```
 
 ### 7. Chạy Frontend Streamlit
