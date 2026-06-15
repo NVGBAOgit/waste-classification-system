@@ -6,7 +6,7 @@ __pycache__/
 # Environment
 .env
 
-# Model files (quá nặng)
+# Model files 
 *.pth
 *.onnx
 
@@ -17,7 +17,7 @@ backup_db/
 # User data
 history_images/
 
-# Dataset (quá nặng)
+# Dataset 
 data/
 model_comparison/data/
 
